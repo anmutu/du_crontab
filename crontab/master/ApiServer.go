@@ -30,25 +30,31 @@ func InitApiServer() (err error) {
 		listener   net.Listener
 		httpServer *http.Server
 	)
+
 	//路由配置
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
+	mux.HandleFunc("/job/joblist", handleJobList)
+
 	//启动监听
 	listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort))
 	if err != nil {
 		return
 	}
+
 	//创建一个http服务
 	httpServer = &http.Server{
 		ReadTimeout:  time.Duration(G_config.ApiReadTimeOut) * time.Millisecond,
 		WriteTimeout: time.Duration(G_config.ApiWriteTimeOut) * time.Millisecond,
 		Handler:      mux,
 	}
+
 	//给单例对象赋值
 	G_apiServer = &ApiServer{
 		httpServer: httpServer,
 	}
+
 	//启动服务端
 	go httpServer.Serve(listener)
 	return
@@ -119,4 +125,30 @@ ERR:
 	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
 		resp.Write(respBytes)
 	}
+}
+
+//获取所有crontab列表任务
+func handleJobList(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err       error
+		jobList   []*common.Job
+		respBytes []byte
+	)
+
+	//调用JobMgr里的函数
+	if jobList, err = G_JobMgr.ListJobs(); err != nil {
+		goto ERR
+	}
+
+	//正常返回
+	if respBytes, err = common.BuildResponse(0, "success", jobList); err == nil {
+		resp.Write(respBytes)
+	}
+	return
+
+ERR:
+	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(respBytes)
+	}
+
 }

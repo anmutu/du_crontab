@@ -11,12 +11,12 @@ import (
 
 func main() {
 
-	cmd:= exec.Command("C:\\cygwin64\\bin\\bash.exe","-c","ls -al")
+	cmd := exec.Command("C:\\cygwin64\\bin\\bash.exe", "-c", "ls -al")
 
 	//执行命令，然后捕获子进行的输出
-	if output,err:=cmd.CombinedOutput();err!=nil{
+	if output, err := cmd.CombinedOutput(); err != nil {
 		fmt.Print(err)
-	}else{
+	} else {
 		fmt.Print(output)
 	}
 

@@ -6,13 +6,12 @@ package main
 
 import "os/exec"
 
-
-func main(){
-	cmd:= exec.Command("C:\\cygwin64\\bin\\bash.exe")
-	err:=cmd.Run()
-	if err!=nil{
+func main() {
+	cmd := exec.Command("C:\\cygwin64\\bin\\bash.exe")
+	err := cmd.Run()
+	if err != nil {
 		print(err)
-	}else{
+	} else {
 		print("success")
 	}
 }

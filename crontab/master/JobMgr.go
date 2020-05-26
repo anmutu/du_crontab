@@ -9,6 +9,7 @@ import (
 	"du_corntab/crontab/master/common"
 	"encoding/json"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/mvcc/mvccpb"
 	"time"
 )
 
@@ -108,4 +109,31 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		oldJob = &oldJobObj
 	}
 	return
+}
+
+//获取etcd里的任务
+func (JobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
+	var (
+		dirKey  string
+		getResp *clientv3.GetResponse
+		kvPair  *mvccpb.KeyValue
+		job     *common.Job
+	)
+	dirKey = common.JOB_SAVE_DIR
+	if getResp, err = JobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrevKV()); err != nil {
+		return
+	}
+
+	jobList = make([]*common.Job, 0)
+
+	//遍历所有任务
+	for kvPair = range getResp.Kvs {
+		job = &common.Job{}
+		if err = json.Unmarshal(kvPair.Value, job); err != nil {
+			continue
+		}
+		jobList = append(jobList, job)
+	}
+	return
+
 }
