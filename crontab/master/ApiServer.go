@@ -7,6 +7,7 @@ package master
 import (
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -31,14 +32,14 @@ func InitApiServer() (err error) {
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
 	//启动监听
-	listener, err = net.Listen("tcp", ":8070")
+	listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort))
 	if err != nil {
 		return
 	}
 	//创建一个http服务
 	httpServer = &http.Server{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  time.Duration(G_config.ApiReadTimeOut) * time.Millisecond,
+		WriteTimeout: time.Duration(G_config.ApiWriteTimeOut) * time.Millisecond,
 		Handler:      mux,
 	}
 	//给单例对象赋值
