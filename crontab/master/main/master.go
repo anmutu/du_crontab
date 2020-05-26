@@ -31,6 +31,11 @@ func main() {
 	//初始化线程
 	initEnv()
 
+	//初始化任务管理器
+	if err = master.InitJogMgr(); err != nil {
+		goto ERR
+	}
+
 	//启动api服务
 	if err = master.InitApiServer(); err != nil {
 		goto ERR
