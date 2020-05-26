@@ -5,6 +5,8 @@
 package master
 
 import (
+	"du_corntab/crontab/master/common"
+	"encoding/json"
 	"net"
 	"net/http"
 	"strconv"
@@ -52,6 +54,39 @@ func InitApiServer() (err error) {
 }
 
 //保存任务接口
-func handleJobSave(w http.ResponseWriter, r *http.Request) {
+//内容是 job={"name":"job1","command":"echo hi","cronExpr":"* * * * *"}
+func handleJobSave(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err       error
+		postJob   string
+		job       common.Job
+		oldJob    *common.Job
+		respBytes []byte
+	)
+	//第一步，解析Post的表单
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+
+	//表单中取出job字段。
+	postJob = req.PostForm.Get("job")
+	//反序列化
+	if err = json.Unmarshal([]byte(postJob), &job); err != nil {
+		goto ERR
+	}
+	//保存job,调用JobMgr的方法。
+	if oldJob, err = G_JobMgr.SaveJob(&job); err != nil {
+		goto ERR
+	}
+	//返回正常消息结构体
+	if respBytes, err = common.BuildResponse(0, "success", oldJob); err == nil {
+		resp.Write(respBytes)
+	}
+	return
+ERR:
+	//返回异常消息结构体
+	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(respBytes)
+	}
 
 }

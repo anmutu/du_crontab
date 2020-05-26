@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
+	"time"
 )
 
 var (
@@ -39,6 +40,11 @@ func main() {
 	//启动api服务
 	if err = master.InitApiServer(); err != nil {
 		goto ERR
+	}
+
+	//让程序常驻
+	for {
+		time.Sleep(1 * time.Second)
 	}
 
 	return
