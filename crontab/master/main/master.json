@@ -1,0 +1,11 @@
+{
+  "api接口服务端口":"提供任务CRUD的服务",
+  "apiPort": 8070,
+
+  "api接口读超时": "单位是毫秒",
+  "apiReadTimeOut": 5000,
+
+  "api接口写超时": "单位是毫秒",
+  "apiWriteTimeOUt": 5000
+
+}
