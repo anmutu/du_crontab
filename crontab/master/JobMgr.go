@@ -85,3 +85,27 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 	}
 	return
 }
+
+//从etcd里删除job
+func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
+	var (
+		jobKey    string
+		delResp   *clientv3.DeleteResponse
+		oldJobObj common.Job
+	)
+
+	//得到key并删除它
+	jobKey = "/cron/job" + name
+	if delResp, err = JobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
+		return
+	}
+	//拿到被删除信息，返回。
+	if len(delResp.PrevKvs) != 0 {
+		if err = json.Unmarshal(delResp.PrevKvs[0].Value, oldJobObj); err != nil {
+			err = nil
+			return
+		}
+		oldJob = &oldJobObj
+	}
+	return
+}

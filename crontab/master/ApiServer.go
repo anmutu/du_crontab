@@ -23,7 +23,7 @@ var (
 	G_apiServer *ApiServer
 )
 
-//初始化服务
+//初始化服务,路由配置等。
 func InitApiServer() (err error) {
 	var (
 		mux        *http.ServeMux
@@ -33,6 +33,7 @@ func InitApiServer() (err error) {
 	//路由配置
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
+	mux.HandleFunc("/job/delete", handleJobDelete)
 	//启动监听
 	listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort))
 	if err != nil {
@@ -89,4 +90,33 @@ ERR:
 		resp.Write(respBytes)
 	}
 
+}
+
+//删除任务接口
+//传入name
+func handleJobDelete(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err       error
+		name      string
+		oldJob    *common.Job
+		respBytes []byte
+	)
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+	name = req.PostForm.Get("name")
+	//调用JobMgr里的函数删除etcd里的Job
+	if oldJob, err = G_JobMgr.DeleteJob(name); err != nil {
+		goto ERR
+	}
+	//正常返回
+	if respBytes, err = common.BuildResponse(0, "success", oldJob); err == nil {
+		resp.Write(respBytes)
+	}
+	return
+
+ERR:
+	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(respBytes)
+	}
 }
