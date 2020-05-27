@@ -6,7 +6,7 @@ package master
 
 import (
 	"context"
-	"du_corntab/crontab/master/common"
+	"du_corntab/crontab/common"
 	"encoding/json"
 	"fmt"
 	"go.etcd.io/etcd/clientv3"

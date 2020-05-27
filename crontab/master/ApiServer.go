@@ -5,7 +5,7 @@
 package master
 
 import (
-	"du_corntab/crontab/master/common"
+	"du_corntab/crontab/common"
 	"encoding/json"
 	"fmt"
 	"net"

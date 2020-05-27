@@ -4,7 +4,10 @@
 */
 package common
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 //定时任务
 type Job struct {
@@ -31,4 +34,19 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 
 	resp, err = json.Marshal(response)
 	return
+}
+
+//反序列化
+func UnpackJob(value []byte) (res *Job, err error) {
+	job := &Job{}
+	if err = json.Unmarshal(value, job); err != nil {
+		return
+	}
+	res = job
+	return
+}
+
+//从jobKey中拿到任务名
+func ExtractJobName(jobKey string) string {
+	return strings.TrimPrefix(jobKey, JOB_SAVE_DIR)
 }
