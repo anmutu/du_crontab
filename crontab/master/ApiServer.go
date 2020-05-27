@@ -36,6 +36,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/joblist", handleJobList)
+	mux.HandleFunc("/job/killjob", handleJobKill)
 
 	//启动监听
 	listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort))
