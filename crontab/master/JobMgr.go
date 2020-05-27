@@ -25,7 +25,7 @@ var (
 )
 
 //初始化管理器
-func InitJogMgr() (err error) {
+func InitJobMgr() (err error) {
 	var (
 		config clientv3.Config
 		client *clientv3.Client

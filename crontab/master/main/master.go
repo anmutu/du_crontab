@@ -33,7 +33,7 @@ func main() {
 	}
 
 	//初始化任务管理器
-	if err = master.InitJogMgr(); err != nil {
+	if err = master.InitJobMgr(); err != nil {
 		goto ERR
 	}
 
