@@ -152,3 +152,35 @@ ERR:
 	}
 
 }
+
+//强杀任务
+//传入 /job/kill name=job
+func handleJobKill(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err       error
+		name      string
+		respBytes []byte
+	)
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+
+	name = req.PostForm.Get("name")
+
+	//调用JobMgr里的函数
+	if err = G_JobMgr.KillJob(name); err != nil {
+		return
+	}
+
+	//正常返回
+	if respBytes, err = common.BuildResponse(0, "success", nil); err == nil {
+		resp.Write(respBytes)
+	}
+	return
+
+ERR:
+	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(respBytes)
+	}
+
+}

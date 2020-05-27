@@ -127,7 +127,7 @@ func (JobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
 	jobList = make([]*common.Job, 0)
 
 	//遍历所有任务
-	for kvPair = range getResp.Kvs {
+	for _, kvPair = range getResp.Kvs {
 		job = &common.Job{}
 		if err = json.Unmarshal(kvPair.Value, job); err != nil {
 			continue
@@ -136,4 +136,27 @@ func (JobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
 	}
 	return
 
+}
+
+//强杀etcd里的任务
+//思路：申请一个一秒的租约，然后把这个租约put进去且不续租，就可以实现强杀的功能了。
+func (JobMgr *JobMgr) KillJob(name string) (err error) {
+	var (
+		killerKey      string
+		leaseGrantResp *clientv3.LeaseGrantResponse
+		leaseId        clientv3.LeaseID
+	)
+	killerKey = common.JOB_KILLER_DIR + name
+
+	//第一步，申请一个1秒过期的租约
+	if leaseGrantResp, err = JobMgr.lease.Grant(context.TODO(), 1); err != nil {
+		return
+	}
+	leaseId = leaseGrantResp.ID
+
+	//第二步，把这个带有1秒续约的leaase put到killer目录里，则这个1秒后就会过期了。
+	if _, err = JobMgr.kv.Put(context.TODO(), killerKey, "", clientv3.WithLease(leaseId)); err != nil {
+		return
+	}
+	return
 }
