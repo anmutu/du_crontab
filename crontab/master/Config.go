@@ -16,6 +16,7 @@ type Config struct {
 	ApiWriteTimeOut int      `json:"apiWriteTimeOut"`
 	EtcdEndpoints   []string `json:"etcdEndpoints"`
 	EtcdDialTimeout int      `json:"etcdDialTimeout"`
+	Web             string   `json:"web"`
 }
 
 var (
@@ -39,6 +40,7 @@ func InitConfig(filename string) (err error) {
 	}
 	//赋值给单例config
 	G_config = &conf
-	fmt.Print(conf)
+	fmt.Println("初始化参数成功。")
+	fmt.Println(conf)
 	return
 }

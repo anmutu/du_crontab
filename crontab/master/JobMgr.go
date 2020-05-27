@@ -8,6 +8,7 @@ import (
 	"context"
 	"du_corntab/crontab/master/common"
 	"encoding/json"
+	"fmt"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -53,6 +54,7 @@ func InitJogMgr() (err error) {
 		kv:     kv,
 		lease:  lease,
 	}
+	fmt.Println("初始化任务管理器成功。")
 	return
 }
 

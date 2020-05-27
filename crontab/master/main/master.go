@@ -24,13 +24,13 @@ func main() {
 	//初始化命令行参数
 	initArgs()
 
+	//初始化线程
+	initEnv()
+
 	//初始化配置,这里的confFile就是通过initArgs得到的。
 	if err = master.InitConfig(confFile); err != nil {
 		goto ERR
 	}
-
-	//初始化线程
-	initEnv()
 
 	//初始化任务管理器
 	if err = master.InitJogMgr(); err != nil {
@@ -53,6 +53,7 @@ ERR:
 	fmt.Println(err)
 }
 
+//初始化线程
 func initEnv() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
