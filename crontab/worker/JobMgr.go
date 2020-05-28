@@ -9,9 +9,8 @@ import (
 	"du_corntab/crontab/common"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	mvccpb2 "github.com/coreos/etcd/mvcc/mvccpb"
-	"go.etcd.io/etcd/mvcc/mvccpb"
-	//"github.com/coreos/etcd/mvcc/mvccpb"
+	//"go.etcd.io/etcd/mvcc/mvccpb"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"time"
 )
 
@@ -93,6 +92,7 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 			if job, err := common.UnpackJob(kvPairs.Value); err != nil {
 				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 				//TODO：把这个job同步给scheduler这个调度协程
+				fmt.Println(*jobEvent)
 			}
 		}
 	}
@@ -100,18 +100,18 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 	//从此revision向后监听变化事件
 	go func() {
 		watcherStartRevision = getResp.Header.Revision + 1
-		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watcherStartRevision))
+		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watcherStartRevision), clientv3.WithPrefix())
 		//拿到watchChan就可以监听了
 		for watchResp = range watchChan {
 			for _, watchEvent = range watchResp.Events {
 				switch watchEvent.Type {
-				case mvccpb2.Event_EventType(mvccpb.PUT): //说明这里是任务保存事件
+				case mvccpb.PUT: //说明这里是任务保存事件
 					if job, err = common.UnpackJob(watchEvent.Kv.Value); err != nil {
 						continue //如果不能正常转换就忽略
 					}
 					//构造一个更新的event
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
-				case mvccpb2.Event_EventType(mvccpb.DELETE):
+				case mvccpb.DELETE:
 					jobName = common.ExtractJobName(string(watchEvent.Kv.Key))
 					//构造一个删除的event
 					job = &common.Job{Name: jobName}
@@ -119,6 +119,7 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 
 				}
 				//TODO 把jobEvent推给scheduler.
+				fmt.Println(*jobEvent)
 			}
 		}
 	}()
