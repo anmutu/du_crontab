@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-//定时任务
+//定时任务,要带上"",不然前端还是会取大写的Name
 type Job struct {
-	Name     string `json:name`     //任务名称
-	Commond  string `json:command`  //shell命令
-	CronExpr string `json:cronExpr` //cron表达式
+	Name     string `json:"name"`     //任务名称
+	Commond  string `json:"command"`  //shell命令
+	CronExpr string `json:"cronExpr"` //cron表达式
 }
 
 //返回信息
