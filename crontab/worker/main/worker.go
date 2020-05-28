@@ -32,7 +32,7 @@ func main() {
 		goto ERR
 	}
 
-	//初始化任务管理器
+	//初始化任务管理器，一开始这里就启动了监听
 	if err = worker.InitJobMgr(); err != nil {
 		goto ERR
 	}

@@ -46,7 +46,21 @@ func UnpackJob(value []byte) (res *Job, err error) {
 	return
 }
 
-//从jobKey中拿到任务名
+//从jobKey中拿到任务名,watch模块会用到。
 func ExtractJobName(jobKey string) string {
 	return strings.TrimPrefix(jobKey, JOB_SAVE_DIR)
+}
+
+//变化事件的结构体
+type JobEvent struct {
+	EventType int //有保存和删除
+	Job       *Job
+}
+
+//生成JobEvent的函数
+func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
+	return &JobEvent{
+		EventType: eventType,
+		Job:       job,
+	}
 }

@@ -6,8 +6,14 @@ package common
 
 const (
 	// 任务保存目录
-	JOB_SAVE_DIR = "/crons/jobs/"
+	JOB_SAVE_DIR = "/cron/jobs/"
 
 	//强杀保存目录
-	JOB_KILLER_DIR = "/crons/killer/"
+	JOB_KILLER_DIR = "/cron/killer/"
+
+	// 保存任务事件
+	JOB_EVENT_SAVE = 1
+
+	// 删除任务事件
+	JOB_EVENT_DELETE = 2
 )

@@ -9,6 +9,9 @@ import (
 	"du_corntab/crontab/common"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
+	mvccpb2 "github.com/coreos/etcd/mvcc/mvccpb"
+	"go.etcd.io/etcd/mvcc/mvccpb"
+	//"github.com/coreos/etcd/mvcc/mvccpb"
 	"time"
 )
 
@@ -59,6 +62,10 @@ func InitJobMgr() (err error) {
 		lease:   lease,
 		watcher: watcher,
 	}
+
+	//启动监听
+	G_JobMgr.watchJobs()
+
 	fmt.Println("初始化任务管理器成功。")
 	return
 }
@@ -72,7 +79,11 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		getResp              *clientv3.GetResponse
 		watcherStartRevision int64
 		watchChan            clientv3.WatchChan
-		//watchResp clientv3.WatchResponse
+		watchResp            clientv3.WatchResponse
+		watchEvent           *clientv3.Event
+		job                  *common.Job
+		jobName              string
+		jobEvent             *common.JobEvent
 	)
 	if getResp, err = JobMgr.kv.Get(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithPrevKV()); err != nil {
 		return
@@ -80,8 +91,8 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		//得到当前的所有任务
 		for _, kvPairs := range getResp.Kvs {
 			if job, err := common.UnpackJob(kvPairs.Value); err != nil {
+				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 				//TODO：把这个job同步给scheduler这个调度协程
-				job = job
 			}
 		}
 	}
@@ -90,7 +101,26 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 	go func() {
 		watcherStartRevision = getResp.Header.Revision + 1
 		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watcherStartRevision))
+		//拿到watchChan就可以监听了
+		for watchResp = range watchChan {
+			for _, watchEvent = range watchResp.Events {
+				switch watchEvent.Type {
+				case mvccpb2.Event_EventType(mvccpb.PUT): //说明这里是任务保存事件
+					if job, err = common.UnpackJob(watchEvent.Kv.Value); err != nil {
+						continue //如果不能正常转换就忽略
+					}
+					//构造一个更新的event
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
+				case mvccpb2.Event_EventType(mvccpb.DELETE):
+					jobName = common.ExtractJobName(string(watchEvent.Kv.Key))
+					//构造一个删除的event
+					job = &common.Job{Name: jobName}
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
 
+				}
+				//TODO 把jobEvent推给scheduler.
+			}
+		}
 	}()
-
+	return
 }
