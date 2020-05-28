@@ -25,13 +25,13 @@ func main() {
 	}
 	//键值对
 	kv := clientv3.NewKV(client)
-	putResp, err := kv.Put(context.TODO(), "/cron/jobs/du", "hello world1", clientv3.WithPrevKV())
+	putResp, err := kv.Put(context.TODO(), "/cron/jobs/job1", "hello world1", clientv3.WithPrevKV())
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Printf("之前的版本号是: %s\n", putResp.Header.Revision)
+		fmt.Println("之前的版本号是:", putResp.Header.Revision)
 		if putResp.PrevKv != nil {
-			fmt.Printf("PrevKv的值是：%s\n", putResp.PrevKv.Value)
+			fmt.Println("PrevKv的值是：", string(putResp.PrevKv.Value))
 		} else {
 			fmt.Println("第一次put值哦")
 		}
