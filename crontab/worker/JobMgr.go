@@ -117,11 +117,10 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 					//构造一个删除的event
 					job = &common.Job{Name: jobName}
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
-
 				}
 				//把jobEvent推给scheduler.就是把jobEvent给到它的channel。
+				fmt.Println("将要推送给sheduler的jobEvent的key是", jobEvent.Job.Name)
 				G_Scheduler.PushJobEvent(jobEvent)
-				fmt.Println(*jobEvent)
 			}
 		}
 	}()
