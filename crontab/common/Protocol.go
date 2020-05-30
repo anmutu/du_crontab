@@ -6,7 +6,9 @@ package common
 
 import (
 	"encoding/json"
+	"github.com/gorhill/cronexpr"
 	"strings"
+	"time"
 )
 
 //定时任务,要带上"",不然前端还是会取大写的Name
@@ -63,4 +65,31 @@ func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
 		EventType: eventType,
 		Job:       job,
 	}
+}
+
+//任务调度计划,etcd里有什么任务我们就维护跟它一模一样的。
+type JobSchedulerPlan struct {
+	Job      *Job
+	Expr     *cronexpr.Expression //解析好的表达式
+	NextTime time.Time            //下次执行时间
+}
+
+//构建任务执行计划,参数job,返回JobSchedulerPlan
+func BuildJobSchedulerPlan(job *Job) (jobSchedulerPlan *JobSchedulerPlan, err error) {
+	var (
+		expr *cronexpr.Expression
+	)
+
+	//第一步，解析job的cron表达式
+	if expr, err = cronexpr.Parse(job.CronExpr); err != nil {
+		return
+	}
+
+	//第二步，生成任务调度计划对象
+	jobSchedulerPlan = &JobSchedulerPlan{
+		Job:      job,
+		Expr:     expr,
+		NextTime: expr.Next(time.Now()),
+	}
+	return
 }

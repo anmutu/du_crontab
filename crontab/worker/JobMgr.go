@@ -91,7 +91,8 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		for _, kvPairs := range getResp.Kvs {
 			if job, err := common.UnpackJob(kvPairs.Value); err != nil {
 				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
-				//TODO：把这个job同步给scheduler这个调度协程
+				//把这个job同步给scheduler这个调度协程
+				G_Scheduler.PushJobEvent(jobEvent)
 				fmt.Println(*jobEvent)
 			}
 		}
@@ -118,7 +119,8 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
 
 				}
-				//TODO 把jobEvent推给scheduler.
+				//把jobEvent推给scheduler.就是把jobEvent给到它的channel。
+				G_Scheduler.PushJobEvent(jobEvent)
 				fmt.Println(*jobEvent)
 			}
 		}
