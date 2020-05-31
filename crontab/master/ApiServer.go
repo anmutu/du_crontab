@@ -37,7 +37,7 @@ func InitApiServer() (err error) {
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
 	mux.HandleFunc("/job/list", handleJobList)
-	mux.HandleFunc("/job/killjob", handleJobKill)
+	mux.HandleFunc("/job/kill", handleJobKill)
 
 	// 静态文件目录
 	staticDir := http.Dir(G_config.Web)
@@ -64,7 +64,7 @@ func InitApiServer() (err error) {
 
 	//启动服务端
 	go httpServer.Serve(listener)
-	fmt.Println("初始化服务成功。")
+	fmt.Println("初始化api服务成功:由这里的去调用任务管理器具体CRUD的相关函数。")
 	return
 }
 
@@ -89,12 +89,6 @@ func handleJobList(resp http.ResponseWriter, req *http.Request) {
 		resp.Write(respBytes)
 	}
 	return
-
-	//ERR:
-	//	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
-	//		resp.Write(respBytes)
-	//	}
-
 }
 
 //保存任务接口
@@ -104,7 +98,6 @@ func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 		err       error
 		postJob   string
 		job       common.Job
-		oldJob    *common.Job
 		respBytes []byte
 	)
 	//第一步，解析Post的表单
@@ -123,22 +116,16 @@ func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 		resp.Write(respBytes)
 	}
 	//保存job,调用JobMgr的方法。
-	if oldJob, err = G_JobMgr.SaveJob(&job); err != nil {
+	if _, err = G_JobMgr.SaveJob(&job); err != nil {
 		//goto ERR
 		respBytes, err = common.BuildResponse(-3, "save job 2 etcd failed", err.Error())
 		resp.Write(respBytes)
 	}
 	//返回正常消息结构体
-	if respBytes, err = common.BuildResponse(0, "success", oldJob); err == nil {
+	if respBytes, err = common.BuildResponse(0, "success", job); err == nil {
 		resp.Write(respBytes)
 	}
 	return
-	//ERR:
-	//	//返回异常消息结构体
-	//	if respBytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
-	//		resp.Write(respBytes)
-	//	}
-
 }
 
 //删除任务接口

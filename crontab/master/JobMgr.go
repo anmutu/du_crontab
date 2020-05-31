@@ -54,7 +54,7 @@ func InitJobMgr() (err error) {
 		kv:     kv,
 		lease:  lease,
 	}
-	fmt.Println("初始化任务管理器成功。")
+	fmt.Println("初始化任务管理器成功：由任务管理器进行CRUD的操作。")
 	return
 }
 
@@ -111,42 +111,6 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	}
 	return
 }
-
-//获取etcd里的任务
-//func (JobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
-//	var (
-//		dirKey  string
-//		getResp *clientv3.GetResponse
-//		kvPair  *mvccpb.KeyValue
-//		job     *common.Job
-//	)
-//	dirKey = common.JOB_SAVE_DIR
-//	if getResp, err = JobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrevKV()); err != nil {
-//		return
-//	}
-//
-//	jobList = make([]*common.Job, 0)
-//
-//	//遍历所有任务
-//	//for _, kvPair = range getResp.Kvs {
-//	//	job = &common.Job{}
-//	//	if err = json.Unmarshal(kvPair.Value, job); err != nil {
-//	//		continue
-//	//	}
-//	//	jobList = append(jobList, job)
-//	//}
-//	//return
-//	for _, kvPair = range getResp.Kvs {
-//		job = &common.Job{}
-//		if err =json.Unmarshal(kvPair.Value, job); err != nil {
-//			err = nil
-//			continue
-//		}
-//		jobList = append(jobList, job)
-//	}
-//	return
-//
-//}
 
 func (jobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
 	var (
