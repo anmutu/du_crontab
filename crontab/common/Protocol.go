@@ -93,3 +93,29 @@ func BuildJobSchedulerPlan(job *Job) (jobSchedulerPlan *JobSchedulerPlan, err er
 	}
 	return
 }
+
+//job执行状态
+type JobExecuteInfo struct {
+	Job      *Job
+	PlanTime time.Time //理论调度时间
+	RealTime time.Time //实际调度时间
+}
+
+//执行构造状态信息
+func BuildJobExecuteInfo(jobScheduler *JobSchedulerPlan) (jobExecuteInfo *JobExecuteInfo) {
+	jobExecuteInfo = &JobExecuteInfo{
+		Job:      jobScheduler.Job,
+		PlanTime: jobScheduler.NextTime,
+		RealTime: time.Now(),
+	}
+	return
+}
+
+//任务执行的结果
+type JobExecuteResult struct {
+	ExecuteInfo *JobExecuteInfo //执行状态
+	Output      []byte          //输出
+	Err         error           //执行脚本错误原因
+	StartTime   time.Time
+	EndTime     time.Time
+}
