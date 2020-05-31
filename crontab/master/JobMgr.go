@@ -58,6 +58,40 @@ func InitJobMgr() (err error) {
 	return
 }
 
+//获取etcd里的任务列表
+func (jobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
+	var (
+		dirKey  string
+		getResp *clientv3.GetResponse
+		//kvPair *mvccpb.KeyValue
+		job *common.Job
+	)
+
+	// 任务保存的目录
+	dirKey = common.JOB_SAVE_DIR
+
+	// 获取目录下所有任务信息
+	if getResp, err = jobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
+		return
+	}
+
+	// 初始化数组空间
+	jobList = make([]*common.Job, 0)
+
+	// 遍历所有任务, 进行反序列化
+	//fmt.Println(reflect.TypeOf(getResp.Kvs))
+	for _, kvPair := range getResp.Kvs {
+		job = &common.Job{}
+		fmt.Println(kvPair.Value)
+		if err = json.Unmarshal(kvPair.Value, job); err != nil {
+			err = nil
+			continue
+		}
+		jobList = append(jobList, job)
+	}
+	return
+}
+
 //保存job到etcd。
 func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 	var (
@@ -108,39 +142,6 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 			return
 		}
 		oldJob = &oldJobObj
-	}
-	return
-}
-
-func (jobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
-	var (
-		dirKey  string
-		getResp *clientv3.GetResponse
-		//kvPair *mvccpb.KeyValue
-		job *common.Job
-	)
-
-	// 任务保存的目录
-	dirKey = common.JOB_SAVE_DIR
-
-	// 获取目录下所有任务信息
-	if getResp, err = jobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
-		return
-	}
-
-	// 初始化数组空间
-	jobList = make([]*common.Job, 0)
-	// len(jobList) == 0
-
-	// 遍历所有任务, 进行反序列化
-	//fmt.Println(reflect.TypeOf(getResp.Kvs))
-	for _, kvPair := range getResp.Kvs {
-		job = &common.Job{}
-		if err = json.Unmarshal(kvPair.Value, job); err != nil {
-			err = nil
-			continue
-		}
-		jobList = append(jobList, job)
 	}
 	return
 }
