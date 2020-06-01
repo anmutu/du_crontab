@@ -32,7 +32,7 @@ func main() {
 		goto ERR
 	}
 
-	//初始化任务管理器，一开始这里就启动了监听
+	//初始化任务管理器，一开始这里就启动了监听，就会一直把有变化的job发送到scheduler的channel中。
 	if err = worker.InitJobMgr(); err != nil {
 		goto ERR
 	}

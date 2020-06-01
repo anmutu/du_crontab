@@ -52,9 +52,9 @@ func (scheduler *Scheduler) schedulerLoop() {
 	for {
 		select {
 		case jobEvent = <-scheduler.jobEventChan:
-			//对内存中维护的任务列表进行CRUD
+			//对内存中维护的任务列表jobPlanTable进行与etcd里的job进行同步操作。
 			scheduler.handleJobEvent(jobEvent)
-		case <-schedulerTimer.C:
+		case <-schedulerTimer.C: //说明最近的任务到期了
 		case jobResult = <-scheduler.jobResultChan:
 			scheduler.handleJobResult(jobResult)
 		}
@@ -65,6 +65,7 @@ func (scheduler *Scheduler) schedulerLoop() {
 }
 
 //处理任务的事件
+//也就是往Scheduler里的jobPlanTable维护一个跟etcd里一模一样的job。
 func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 	var (
 		jobScheduler *common.JobSchedulerPlan
@@ -77,22 +78,23 @@ func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 			return
 		}
 		scheduler.jobPlanTable[jobEvent.Job.Name] = jobScheduler
-		fmt.Printf("scheduler里检测到有增加任务:%v", scheduler.jobPlanTable[jobEvent.Job.Name])
-
+		fmt.Println("向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 	case common.JOB_EVENT_DELETE:
 		if jobScheduler, jobExist = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExist {
 			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
-			fmt.Printf("scheduler里检测到有刪除任务:%v", scheduler.jobPlanTable[jobEvent.Job.Name])
+			fmt.Println("向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 		}
 	}
 }
 
 //推送任务变化事件,就是把jobEvent任务的到Scheduler里的jobEventChan里。
+//JobMgr那边检测到任务变化则会调用此函数。
 func (scheduler *Scheduler) PushJobEvent(jobEvent *common.JobEvent) {
 	if scheduler == nil {
 		scheduler = &Scheduler{}
 	}
 	scheduler.jobEventChan <- jobEvent
+	fmt.Println("成功将数据推送到scheduler.jobEventChan，其任务名称为", jobEvent.Job.Name)
 }
 
 //重新计算任务调度状态

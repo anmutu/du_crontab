@@ -36,7 +36,7 @@ func InitConfig(filename string) (err error) {
 	}
 	//赋值给单例config
 	G_config = &conf
-	fmt.Println("初始化参数成功。")
+	fmt.Println("1.初始化参数成功：成功将worker.json解析出来给到单列对象Config。")
 	fmt.Println(conf)
 	return
 }

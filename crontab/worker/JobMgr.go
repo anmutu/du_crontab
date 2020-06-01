@@ -71,8 +71,9 @@ func InitJobMgr() (err error) {
 
 //监听任务的变化
 //就是通过watch的api去监听etcd
-//思路就是get得到某目录下的所有任务，并拿到当前集群的revision
-//接着就从此revision向后监听变化
+//1.思路就是get得到某目录下的所有任务,将之给到Scheduler的channel
+//2.拿到当前集群的revision，接着就从此revision向后监听变化,将之给到Scheduler的channel
+//watchJobs的作用就是把目录里有的任务和目录后面版本的变化的job都推送到Scheduler的jobEventChan的channel里。
 func (JobMgr *JobMgr) watchJobs() (err error) {
 	var (
 		getResp              *clientv3.GetResponse
@@ -93,12 +94,12 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 				//把这个job同步给scheduler这个调度协程
 				G_Scheduler.PushJobEvent(jobEvent)
-				fmt.Println(*jobEvent)
+				//fmt.Println(*jobEvent)
 			}
 		}
 	}
 
-	//从此revision向后监听变化事件
+	//从此revision向后监听变化事件，把变化的job相关信息发送到Scheduler的相关channel。
 	go func() {
 		watcherStartRevision = getResp.Header.Revision + 1
 		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithRev(watcherStartRevision), clientv3.WithPrefix())
