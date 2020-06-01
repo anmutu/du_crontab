@@ -11,6 +11,12 @@ import (
 )
 
 //任务调度结构体
+//1.jobEventChan可认为与jobPlanTable是一对。
+//1a.通过jobEventChan里的信息将etcd里的job同步的维护到jobPlanTable表中。
+//2b.jobPlanTable计划表里有job的下次执行时间小于等于当前时间，则要尝试去执行job了。
+//2.jobResultChan可认为jobExecutingTable是一对。
+//2a.一个job执行前是需要先把这个任务加入到jobExecutingTable中的，执行后则需要将这个job从jobExecutingTable中删除掉。
+//2b.删除的逻辑是：job执行后，将其相关信息写到jobResultChan中，jobResultChan中有数据则从jobExecutingTable中删除相关数据。
 type Scheduler struct {
 	jobEventChan      chan *common.JobEvent               //etcd任务事件队列。
 	jobPlanTable      map[string]*common.JobSchedulerPlan //任务调度计划表，key为任务名。
@@ -55,7 +61,7 @@ func (scheduler *Scheduler) schedulerLoop() {
 			//对内存中维护的任务列表jobPlanTable进行与etcd里的job进行同步操作。
 			scheduler.handleJobEvent(jobEvent)
 		case <-schedulerTimer.C: //说明最近的任务到期了
-		case jobResult = <-scheduler.jobResultChan:
+		case jobResult = <-scheduler.jobResultChan: //jobResultChan有了数据，就把这个任务从任务执行表del。
 			scheduler.handleJobResult(jobResult)
 		}
 		//调度任务
@@ -66,6 +72,7 @@ func (scheduler *Scheduler) schedulerLoop() {
 
 //处理任务的事件
 //也就是往Scheduler里的jobPlanTable维护一个跟etcd里一模一样的job。
+//这里就说明了：jobEventChan可认为与jobPlanTable是一对。
 func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 	var (
 		jobScheduler *common.JobSchedulerPlan
@@ -98,6 +105,8 @@ func (scheduler *Scheduler) PushJobEvent(jobEvent *common.JobEvent) {
 }
 
 //重新计算任务调度状态
+//遍历jobPlanTable计划表，如果里面有数据的下次执行时间小于等于当前时间，则尝试执行。
+//TryScheduler里TryStartJob
 func (scheduler *Scheduler) TryScheduler() (schedulerAfter time.Duration) {
 	//遍历所有任务。过期的任务立即执行。统计最近要过期的任务。
 	var (
@@ -131,6 +140,7 @@ func (scheduler *Scheduler) TryScheduler() (schedulerAfter time.Duration) {
 
 //尝试开始执行任务
 //如果任务正在执行，那么跳过本次任务。
+//如job不在jobExecutingTable表中，将其加入到jobExecutingTable任务执行表中，然后执行这个任务。
 func (scheduler *Scheduler) TryStartJob(jobPlan *common.JobSchedulerPlan) {
 	var (
 		jobExecuteInfo *common.JobExecuteInfo
@@ -144,11 +154,11 @@ func (scheduler *Scheduler) TryStartJob(jobPlan *common.JobSchedulerPlan) {
 	jobExecuteInfo = common.BuildJobExecuteInfo(jobPlan)           //创建执行状态的相差信息
 	scheduler.jobExecutingTable[jobPlan.Job.Name] = jobExecuteInfo //保存执行状态
 	//TODO 执行任务
-	G_Executor.ExecutorJob(jobExecuteInfo)
 	fmt.Println("scheduler trystartjob "+jobExecuteInfo.Job.Name, jobExecuteInfo.PlanTime, jobExecuteInfo.RealTime)
+	G_Executor.ExecutorJob(jobExecuteInfo)
 }
 
-//回传任务结果到channel的函数。
+//回传任务结果到jobResultChan的函数。
 func (scheduler *Scheduler) PushJobResult(jobResult *common.JobExecuteResult) {
 	scheduler.jobResultChan <- jobResult
 }

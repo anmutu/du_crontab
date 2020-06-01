@@ -7,6 +7,7 @@ package worker
 import (
 	"context"
 	"du_corntab/crontab/common"
+	"fmt"
 	"os/exec"
 	"time"
 )
@@ -51,6 +52,7 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 			result.EndTime = time.Now()
 		} else {
 			//上锁成功，开始时间从这里开始算会更准确点
+			fmt.Println("即将执行任务：", info.Job.Name)
 			result.StartTime = time.Now()
 			//cmd=exec.CommandContext(context.TODO(),"/bin/bash","-c",info.Job.Commond)
 			cmd = exec.CommandContext(context.TODO(), "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Commond)
