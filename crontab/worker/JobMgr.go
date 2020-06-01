@@ -65,7 +65,10 @@ func InitJobMgr() (err error) {
 	//启动监听
 	G_JobMgr.watchJobs()
 
-	fmt.Println("初始化任务管理器成功。")
+	//启动killer的监听
+	G_JobMgr.watchKiller()
+
+	fmt.Println("初始化任务管理器成功。监听了任务启动和killer的监听。")
 	return
 }
 
@@ -126,6 +129,34 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		}
 	}()
 	return
+}
+
+//监听强杀的目录
+//还是跟监听job的目录一样，目的都是把相关信息推送到Scheduler。
+func (jobMgr *JobMgr) watchKiller() {
+	go func() {
+		var (
+			watchChan  clientv3.WatchChan
+			watchResp  clientv3.WatchResponse
+			watchEvent *clientv3.Event
+			job        *common.Job
+			jobName    string
+			jobEvent   *common.JobEvent
+		)
+		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JOB_KILLER_DIR, clientv3.WithPrevKV())
+		for watchResp = range watchChan {
+			for _, watchEvent = range watchResp.Events {
+				switch watchEvent.Type {
+				case mvccpb.PUT: //说明这里是任务强杀事件
+					jobName = common.ExtractKillerName(string(watchEvent.Kv.Key))
+					job = &common.Job{Name: jobName}
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_KILL, job)
+					G_Scheduler.PushJobEvent(jobEvent)
+				case mvccpb.DELETE: // killer标记过期, 被自动删除
+				}
+			}
+		}
+	}()
 }
 
 //创建任务执行琐

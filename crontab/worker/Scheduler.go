@@ -75,21 +75,28 @@ func (scheduler *Scheduler) schedulerLoop() {
 //这里就说明了：jobEventChan可认为与jobPlanTable是一对。
 func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 	var (
-		jobScheduler *common.JobSchedulerPlan
-		err          error
-		jobExist     bool
+		jobScheduler   *common.JobSchedulerPlan
+		err            error
+		jobExist       bool
+		jobExecuteInfo *common.JobExecuteInfo
+		jobExecuting   bool
 	)
 	switch jobEvent.EventType {
-	case common.JOB_EVENT_SAVE:
+	case common.JOB_EVENT_SAVE: //保存
 		if jobScheduler, err = common.BuildJobSchedulerPlan(jobEvent.Job); err != nil {
 			return
 		}
 		scheduler.jobPlanTable[jobEvent.Job.Name] = jobScheduler
-		fmt.Println("向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
-	case common.JOB_EVENT_DELETE:
+		fmt.Println("handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+	case common.JOB_EVENT_DELETE: //删除
 		if jobScheduler, jobExist = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExist {
 			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
-			fmt.Println("向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+			fmt.Println("handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+		}
+	case common.JOB_EVENT_KILL: //强杀
+		if jobExecuteInfo, jobExecuting = scheduler.jobExecutingTable[jobEvent.Job.Name]; jobExecuting {
+			fmt.Println("handleJobEvent。强杀任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+			jobExecuteInfo.CancelFunc() // 触发command杀死shell子进程, 任务得到退出
 		}
 	}
 }

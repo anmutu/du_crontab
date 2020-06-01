@@ -5,7 +5,6 @@
 package worker
 
 import (
-	"context"
 	"du_corntab/crontab/common"
 	"fmt"
 	"os/exec"
@@ -55,7 +54,8 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 			fmt.Println("即将执行任务：", info.Job.Name)
 			result.StartTime = time.Now()
 			//cmd=exec.CommandContext(context.TODO(),"/bin/bash","-c",info.Job.Commond)
-			cmd = exec.CommandContext(context.TODO(), "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Commond)
+			//因为这里有强杀的需求，这里的context需要是info.CancelCtx
+			cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Commond)
 			output, err = cmd.CombinedOutput()
 			result.Output = output
 			result.Err = err

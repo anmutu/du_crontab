@@ -5,6 +5,7 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorhill/cronexpr"
 	"strings"
@@ -96,9 +97,11 @@ func BuildJobSchedulerPlan(job *Job) (jobSchedulerPlan *JobSchedulerPlan, err er
 
 //job执行状态
 type JobExecuteInfo struct {
-	Job      *Job
-	PlanTime time.Time //理论调度时间
-	RealTime time.Time //实际调度时间
+	Job        *Job
+	PlanTime   time.Time          //理论调度时间
+	RealTime   time.Time          //实际调度时间
+	CancelCtx  context.Context    //任务command取消的context,用于强杀任务
+	CancelFunc context.CancelFunc //取消任务的函数，用于强杀任务
 }
 
 //执行构造状态信息
@@ -108,6 +111,8 @@ func BuildJobExecuteInfo(jobScheduler *JobSchedulerPlan) (jobExecuteInfo *JobExe
 		PlanTime: jobScheduler.NextTime,
 		RealTime: time.Now(),
 	}
+	//这里是用于任务强杀。
+	jobExecuteInfo.CancelCtx, jobExecuteInfo.CancelFunc = context.WithCancel(context.TODO())
 	return
 }
 
@@ -118,4 +123,9 @@ type JobExecuteResult struct {
 	Err         error           //执行脚本错误原因
 	StartTime   time.Time
 	EndTime     time.Time
+}
+
+//获取强杀目录里的killName
+func ExtractKillerName(killerKey string) (killName string) {
+	return strings.TrimPrefix(killerKey, JOB_KILLER_DIR)
 }
