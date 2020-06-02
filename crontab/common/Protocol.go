@@ -141,3 +141,8 @@ type JobLog struct {
 	StartTime    int64  `json:"startTime" bson:"startTime"`
 	EndTime      int64  `json:"endTime" bson:"endTime"`
 }
+
+//日志批次
+type LogBatch struct {
+	Logs []interface{}
+}

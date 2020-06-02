@@ -6,5 +6,11 @@
   "etcdDialTimeOut": 5000,
 
   "mongodb地址": "采用mongodb uri",
-  "mongodbUri": "mongodb://129.211.78.6:27017"
+  "mongodbUri": "mongodb://129.211.78.6:27017",
+
+  "日志批次大小": "为了减少网络传输",
+  "jobLogBatchSize": 100,
+
+  "日志自动提交超时时间设计": "在批次未达到阀值(jobLogBatchSize)之前, 超过这个设置的时间则会自动提交。单位为毫秒。 ",
+  "jobLogCommitTimeout": 1000
 }

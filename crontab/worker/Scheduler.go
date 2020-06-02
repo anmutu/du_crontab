@@ -194,6 +194,8 @@ func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
 		} else {
 			jobLog.Err = ""
 		}
+		fmt.Println("scheduler.handleJobResult：将名称为", jobLog.JobName, "的job发送到日志模块。")
+		G_LogSink.Append2LogChan(jobLog)
 		return
 	}
 }
