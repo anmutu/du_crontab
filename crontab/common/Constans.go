@@ -21,5 +21,5 @@ const (
 	JOB_EVENT_KILL = 3
 
 	//任务锁目录
-	JOB_LOCK_DIR = "/cron/lock"
+	JOB_LOCK_DIR = "/cron/lock/"
 )

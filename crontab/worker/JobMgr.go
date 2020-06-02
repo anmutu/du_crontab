@@ -87,22 +87,24 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		job                  *common.Job
 		jobName              string
 		jobEvent             *common.JobEvent
-		kvPairs              *mvccpb.KeyValue
+		kvPair               *mvccpb.KeyValue
 	)
-	if getResp, err = JobMgr.kv.Get(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithPrevKV()); err != nil {
+	if getResp, err = JobMgr.kv.Get(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithPrefix()); err != nil {
 		return
 	}
 
 	//得到当前的所有任务
-	for _, kvPairs = range getResp.Kvs {
-		fmt.Println(getResp.Kvs)
-		if job, err = common.UnpackJob(kvPairs.Value); err == nil {
-			jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
-			//把这个job同步给scheduler这个调度协程
-			fmt.Println("watchJobs：从现有的jobs里将其任务发送给scheduler,job名为：", jobEvent.Job.Name)
-			G_Scheduler.PushJobEvent(jobEvent)
+	go func() {
+		for _, kvPair = range getResp.Kvs {
+			fmt.Println(getResp.Kvs)
+			if job, err = common.UnpackJob(kvPair.Value); err == nil {
+				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
+				//把这个job同步给scheduler这个调度协程
+				fmt.Println("watchJobs：从现有的jobs里将其任务发送给scheduler,job名为：", jobEvent.Job.Name)
+				G_Scheduler.PushJobEvent(jobEvent)
+			}
 		}
-	}
+	}()
 
 	//从此revision向后监听变化事件，把变化的job相关信息发送到Scheduler的相关channel。
 	go func() {
