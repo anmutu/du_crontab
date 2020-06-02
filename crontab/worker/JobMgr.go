@@ -87,18 +87,20 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		job                  *common.Job
 		jobName              string
 		jobEvent             *common.JobEvent
+		kvPairs              *mvccpb.KeyValue
 	)
 	if getResp, err = JobMgr.kv.Get(context.TODO(), common.JOB_SAVE_DIR, clientv3.WithPrevKV()); err != nil {
 		return
-	} else {
-		//得到当前的所有任务
-		for _, kvPairs := range getResp.Kvs {
-			if job, err := common.UnpackJob(kvPairs.Value); err != nil {
-				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
-				//把这个job同步给scheduler这个调度协程
-				G_Scheduler.PushJobEvent(jobEvent)
-				//fmt.Println(*jobEvent)
-			}
+	}
+
+	//得到当前的所有任务
+	for _, kvPairs = range getResp.Kvs {
+		fmt.Println(getResp.Kvs)
+		if job, err = common.UnpackJob(kvPairs.Value); err == nil {
+			jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
+			//把这个job同步给scheduler这个调度协程
+			fmt.Println("watchJobs：从现有的jobs里将其任务发送给scheduler,job名为：", jobEvent.Job.Name)
+			G_Scheduler.PushJobEvent(jobEvent)
 		}
 	}
 
@@ -123,7 +125,9 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
 				}
 				//把jobEvent推给scheduler.就是把jobEvent给到它的channel。
-				fmt.Println("将要推送给sheduler的jobEvent的key是", jobEvent.Job.Name)
+				//fmt.Println("将要推送给sheduler的jobEvent的key是", jobEvent.Job.Name)
+				fmt.Println("watchJobs：监控到有事件变化，将watch到的job发送给scheduler,job名为：", jobEvent.Job.Name)
+
 				G_Scheduler.PushJobEvent(jobEvent)
 			}
 		}
