@@ -15,13 +15,13 @@ import (
 //定时任务,要带上"",不然前端还是会取大写的Name
 type Job struct {
 	Name     string `json:"name"`     //任务名称
-	Commond  string `json:"command"`  //shell命令
+	Command  string `json:"command"`  //shell命令
 	CronExpr string `json:"cronExpr"` //cron表达式
 }
 
 //返回信息
 type Response struct {
-	Erron int         `json:"errno"`
+	Errno int         `json:"errno"` //错误代码
 	Msg   string      `json:"msg"`
 	Data  interface{} `json:"data"`
 }
@@ -31,7 +31,7 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 	var (
 		response Response
 	)
-	response.Erron = errno
+	response.Errno = errno
 	response.Msg = msg
 	response.Data = data
 
@@ -128,4 +128,16 @@ type JobExecuteResult struct {
 //获取强杀目录里的killName
 func ExtractKillerName(killerKey string) (killName string) {
 	return strings.TrimPrefix(killerKey, JOB_KILLER_DIR)
+}
+
+// 任务执行日志
+type JobLog struct {
+	JobName      string `json:"jobName" bson:"jobName"`
+	Command      string `json:"command" bson:"command"`
+	Err          string `json:"err" bson:"err"`
+	Output       string `json:"output" bson:"output"`
+	PlanTime     int64  `json:"planTime" bson:"planTime"`
+	ScheduleTime int64  `json:"scheduleTime" bson:"scheduleTime"`
+	StartTime    int64  `json:"startTime" bson:"startTime"`
+	EndTime      int64  `json:"endTime" bson:"endTime"`
 }

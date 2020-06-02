@@ -171,8 +171,29 @@ func (scheduler *Scheduler) PushJobResult(jobResult *common.JobExecuteResult) {
 }
 
 //处理由executor传过来的结果
-//把这个执行过的job从jobExecutingTable表中删除掉
+//1.把这个执行过的job从jobExecutingTable表中删除掉
+//2.把结果纪录到日志中
 func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
+	var (
+		jobLog *common.JobLog
+	)
 	delete(scheduler.jobExecutingTable, result.ExecuteInfo.Job.Name)
 	fmt.Println("scheduler.handleJobResult收到结果:", result.ExecuteInfo.Job.Name, string(result.Output), result.Err)
+	if result.Err != common.ERR_LOCK_ALREADY_OCCUPIED {
+		jobLog = &common.JobLog{
+			JobName:      result.ExecuteInfo.Job.Name,
+			Command:      result.ExecuteInfo.Job.Command,
+			Output:       string(result.Output),
+			PlanTime:     result.ExecuteInfo.PlanTime.UnixNano() / 1000 / 1000,
+			ScheduleTime: result.ExecuteInfo.RealTime.UnixNano() / 1000 / 1000,
+			StartTime:    result.StartTime.UnixNano() / 1000 / 1000,
+			EndTime:      result.EndTime.UnixNano() / 1000 / 1000,
+		}
+		if result.Err != nil {
+			jobLog.Err = result.Err.Error()
+		} else {
+			jobLog.Err = ""
+		}
+		return
+	}
 }
