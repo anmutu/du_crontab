@@ -68,7 +68,10 @@ func (logMgr *LogMgr) GetLoglist(name string, skip int, limit int) (logArr []*co
 	//	return nil, err
 	//}
 
+	//filter = bson.{"jobName": name}
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	//cur, err := logMgr.logCollection.Find(ctx,base.filter,ops)
+	//cur, err := logMgr.logCollection.Find(ctx,base)
 	cur, err := logMgr.logCollection.Find(ctx, bson.D{})
 	if err != nil {
 		log.Fatal(err)
@@ -82,7 +85,9 @@ func (logMgr *LogMgr) GetLoglist(name string, skip int, limit int) (logArr []*co
 			log.Fatal(err)
 		}
 		// do something with result....
+		//if(jobLog.JobName==name){
 		logArr = append(logArr, jobLog)
+		//}
 	}
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
