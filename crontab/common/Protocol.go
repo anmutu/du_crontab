@@ -146,3 +146,13 @@ type JobLog struct {
 type LogBatch struct {
 	Logs []interface{}
 }
+
+// 任务日志过滤条件
+type JobLogFilter struct {
+	JobName string `bson:"jobName"`
+}
+
+// 任务日志排序规则
+type SortLogByStartTime struct {
+	SortOrder int `bson:"startTime"`
+}

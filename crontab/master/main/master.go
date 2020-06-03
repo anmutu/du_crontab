@@ -37,6 +37,11 @@ func main() {
 		goto ERR
 	}
 
+	//初始化日志模块
+	if err = master.InitLogMgr(); err != nil {
+		goto ERR
+	}
+
 	//启动api服务
 	if err = master.InitApiServer(); err != nil {
 		goto ERR
