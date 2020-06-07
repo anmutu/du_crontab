@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+//executor就是接收到scheduler推送过来的job,然后执行。这就是executor的职责。
+
 type Executor struct {
 }
 
@@ -53,7 +55,10 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 			//上锁成功，开始时间从这里开始算会更准确点
 			fmt.Println("即将执行任务：", info.Job.Name)
 			result.StartTime = time.Now()
-			//cmd=exec.CommandContext(context.TODO(),"/bin/bash","-c",info.Job.Commond)
+
+			//发布到linux里使用这个。
+			//cmd=exec.CommandContext(info.CancelCtx,"/bin/bash","-c",info.Job.Command)
+
 			//因为这里有强杀的需求，这里的context需要是info.CancelCtx
 			cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
 			output, err = cmd.CombinedOutput()

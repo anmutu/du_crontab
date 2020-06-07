@@ -14,6 +14,12 @@ import (
 	"time"
 )
 
+//这里会监控到3种情况：
+//1.现有的任务。
+//2.现有任务有变化的任务，如修改或者删除的。这种情况版本号会变。
+//3.强杀的任务。
+//都需要将其发送给Scheduler去做处理。
+
 //任务管理器
 type JobMgr struct {
 	client  *clientv3.Client //这里用的是指针
@@ -68,7 +74,7 @@ func InitJobMgr() (err error) {
 	//启动killer的监听
 	G_JobMgr.watchKiller()
 
-	fmt.Println("初始化任务管理器成功。监听了任务启动和killer的监听。")
+	//fmt.Println("初始化任务管理器成功。监听了任务启动和killer的监听。")
 	return
 }
 
@@ -96,11 +102,11 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 	//得到当前的所有任务
 	go func() {
 		for _, kvPair = range getResp.Kvs {
-			fmt.Println(getResp.Kvs)
+			//fmt.Println(getResp.Kvs)
 			if job, err = common.UnpackJob(kvPair.Value); err == nil {
 				jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 				//把这个job同步给scheduler这个调度协程
-				fmt.Println("watchJobs：从现有的jobs里将其任务发送给scheduler,job名为：", jobEvent.Job.Name)
+				fmt.Println("1.watchJobs：从现有的jobs里将其任务发送给scheduler,job名为：", jobEvent.Job.Name)
 				G_Scheduler.PushJobEvent(jobEvent)
 			}
 		}
@@ -128,7 +134,7 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 				}
 				//把jobEvent推给scheduler.就是把jobEvent给到它的channel。
 				//fmt.Println("将要推送给sheduler的jobEvent的key是", jobEvent.Job.Name)
-				fmt.Println("watchJobs：监控到有事件变化，将watch到的job发送给scheduler,job名为：", jobEvent.Job.Name)
+				fmt.Println("1.watchJobs：监控到有事件变化（修改或删除），将watch到的job发送给scheduler,job名为：", jobEvent.Job.Name)
 
 				G_Scheduler.PushJobEvent(jobEvent)
 			}
@@ -157,6 +163,7 @@ func (jobMgr *JobMgr) watchKiller() {
 					jobName = common.ExtractKillerName(string(watchEvent.Kv.Key))
 					job = &common.Job{Name: jobName}
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_KILL, job)
+					fmt.Println("1.watchJobs：发现有强杀任务，发送给scheduler,job名为：", jobEvent.Job.Name)
 					G_Scheduler.PushJobEvent(jobEvent)
 				case mvccpb.DELETE: // killer标记过期, 被自动删除
 				}

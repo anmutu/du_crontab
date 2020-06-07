@@ -1,6 +1,6 @@
 /*
   author='du'
-  date='2020/5/25 10:09'
+  date='2020/5/31 12:57'
 */
 package main
 
@@ -14,7 +14,7 @@ func main() {
 	//客户端配置
 	config := clientv3.Config{
 		Endpoints:   []string{"129.211.78.6:2379"},
-		DialTimeout: 5 * time.Second,
+		DialTimeout: 25 * time.Second,
 	}
 	//建立连接
 	_, err := clientv3.New(config)
@@ -22,5 +22,6 @@ func main() {
 		fmt.Printf("连接失败：%s", err)
 		return
 	}
+	//键值对
 
 }

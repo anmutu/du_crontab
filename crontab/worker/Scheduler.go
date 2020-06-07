@@ -75,27 +75,27 @@ func (scheduler *Scheduler) schedulerLoop() {
 //这里就说明了：jobEventChan可认为与jobPlanTable是一对。
 func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 	var (
-		jobScheduler   *common.JobSchedulerPlan
-		err            error
-		jobExist       bool
-		jobExecuteInfo *common.JobExecuteInfo
-		jobExecuting   bool
+		jobSchedulerPlan *common.JobSchedulerPlan
+		err              error
+		jobExist         bool
+		jobExecuteInfo   *common.JobExecuteInfo
+		jobExecuting     bool
 	)
 	switch jobEvent.EventType {
 	case common.JOB_EVENT_SAVE: //保存
-		if jobScheduler, err = common.BuildJobSchedulerPlan(jobEvent.Job); err != nil {
+		if jobSchedulerPlan, err = common.BuildJobSchedulerPlan(jobEvent.Job); err != nil {
 			return
 		}
-		scheduler.jobPlanTable[jobEvent.Job.Name] = jobScheduler
-		fmt.Println("handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+		scheduler.jobPlanTable[jobEvent.Job.Name] = jobSchedulerPlan
+		fmt.Println("3.handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 	case common.JOB_EVENT_DELETE: //删除
-		if jobScheduler, jobExist = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExist {
+		if jobSchedulerPlan, jobExist = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExist {
 			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
-			fmt.Println("handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+			fmt.Println("3.handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 		}
 	case common.JOB_EVENT_KILL: //强杀
 		if jobExecuteInfo, jobExecuting = scheduler.jobExecutingTable[jobEvent.Job.Name]; jobExecuting {
-			fmt.Println("handleJobEvent。强杀任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+			fmt.Println("3.handleJobEvent。强杀任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 			jobExecuteInfo.CancelFunc() // 触发command杀死shell子进程, 任务得到退出
 		}
 	}
@@ -108,7 +108,7 @@ func (scheduler *Scheduler) PushJobEvent(jobEvent *common.JobEvent) {
 		scheduler = &Scheduler{}
 	}
 	scheduler.jobEventChan <- jobEvent
-	fmt.Println("成功将数据推送到scheduler.jobEventChan，其任务名称为", jobEvent.Job.Name)
+	fmt.Println("2.成功将数据推送到scheduler.jobEventChan，其任务名称为", jobEvent.Job.Name)
 }
 
 //重新计算任务调度状态
@@ -131,7 +131,7 @@ func (scheduler *Scheduler) TryScheduler() (schedulerAfter time.Duration) {
 	now = time.Now()
 	for _, jobSchedulerPlan = range scheduler.jobPlanTable {
 		if jobSchedulerPlan.NextTime.Before(now) || jobSchedulerPlan.NextTime.Equal(now) {
-			fmt.Println("scheduler,执行任务:", jobSchedulerPlan.Job.Name)
+			//fmt.Println("scheduler,执行任务:", jobSchedulerPlan.Job.Name)
 			//尝试执行任务
 			scheduler.TryStartJob(jobSchedulerPlan)
 			jobSchedulerPlan.NextTime = jobSchedulerPlan.Expr.Next(now) //更新下次时间
@@ -155,13 +155,12 @@ func (scheduler *Scheduler) TryStartJob(jobPlan *common.JobSchedulerPlan) {
 	)
 	//正在执行则返回，不用管
 	if jobExecuteInfo, jobExecuting = scheduler.jobExecutingTable[jobPlan.Job.Name]; jobExecuting {
-		fmt.Println("scheduler trystartjob 任务正在执行，尚未退出。跳过执行。")
+		fmt.Println("3. scheduler trystartjob 任务正在执行，尚未退出。跳过执行。")
 		return
 	}
 	jobExecuteInfo = common.BuildJobExecuteInfo(jobPlan)           //创建执行状态的相差信息
 	scheduler.jobExecutingTable[jobPlan.Job.Name] = jobExecuteInfo //保存执行状态
-	//TODO 执行任务
-	fmt.Println("scheduler trystartjob "+jobExecuteInfo.Job.Name, jobExecuteInfo.PlanTime, jobExecuteInfo.RealTime)
+	fmt.Printf("3. scheduler trystartjob 准备开始执行job,其名称为%s,其计划执行时间是%s,其真正执行时间是%s", jobExecuteInfo.Job.Name, jobExecuteInfo.PlanTime, jobExecuteInfo.RealTime)
 	G_Executor.ExecutorJob(jobExecuteInfo)
 }
 
@@ -178,7 +177,11 @@ func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
 		jobLog *common.JobLog
 	)
 	delete(scheduler.jobExecutingTable, result.ExecuteInfo.Job.Name)
-	fmt.Println("scheduler.handleJobResult收到结果:", result.ExecuteInfo.Job.Name, string(result.Output), result.Err)
+	if result.Err != nil {
+		fmt.Println("4.1 scheduler.handleJobResult收到执行job后的结果，出现错误:", result.Err)
+	} else {
+		fmt.Println("4.1 scheduler.handleJobResult收到执行job后的结果，执行job的名称为和输出结果为:", result.ExecuteInfo.Job.Name, string(result.Output)) //, result.Err)
+	}
 	if result.Err != common.ERR_LOCK_ALREADY_OCCUPIED {
 		jobLog = &common.JobLog{
 			JobName:      result.ExecuteInfo.Job.Name,
@@ -194,7 +197,7 @@ func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
 		} else {
 			jobLog.Err = ""
 		}
-		fmt.Println("scheduler.handleJobResult：将名称为", jobLog.JobName, "的job发送到日志模块。")
+		fmt.Println("4. scheduler.handleJobResult：将名称为", jobLog.JobName, "的job发送到日志模块。")
 		G_LogSink.Append2LogChan(jobLog)
 		return
 	}

@@ -7,7 +7,6 @@ package master
 import (
 	"du_corntab/crontab/common"
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
 	"strconv"
@@ -65,7 +64,6 @@ func InitApiServer() (err error) {
 
 	//启动服务端
 	go httpServer.Serve(listener)
-	fmt.Println("初始化api服务成功:由这里的去调用任务管理器具体CRUD的相关函数。")
 	return
 }
 

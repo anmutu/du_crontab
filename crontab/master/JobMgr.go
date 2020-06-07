@@ -54,7 +54,7 @@ func InitJobMgr() (err error) {
 		kv:     kv,
 		lease:  lease,
 	}
-	fmt.Println("初始化任务管理器成功：由任务管理器进行CRUD的操作。")
+	//fmt.Println("2.初始化任务管理器成功：由任务管理器进行CRUD的操作。")
 	return
 }
 

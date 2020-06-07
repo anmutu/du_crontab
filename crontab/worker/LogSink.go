@@ -40,7 +40,7 @@ func InitLogSink() (err error) {
 		autoCommitChan: make(chan *common.LogBatch, 1000),
 	}
 
-	//开启一个日志数据到mongdb的一个协程。
+	//开启一个日志数据到mongodb的一个协程。
 	go G_LogSink.writeLoop()
 
 	return
@@ -71,13 +71,13 @@ func (logSink *LogSink) writeLoop() {
 			logBatch.Logs = append(logBatch.Logs, log)
 			if len(logBatch.Logs) >= G_config.JobLogBatchSize {
 				//批次满了则要将这批次的日志存到mongodb,保存后要将batch清空。
-				fmt.Println("writeLoop：日志批次已满。")
+				fmt.Println("5. writeLoop：日志批次已满。")
 				logSink.saveLogs(logBatch)
 				logBatch = nil
 				commitTimer.Stop() //可能取消不了，那么下面的情况就要判断两个批次是否相等了。
 			}
 		case timeOutBatch = <-logSink.autoCommitChan:
-			fmt.Println("writeLoop：日志批次未满。")
+			fmt.Println("5. writeLoop：日志批次未满。")
 			if timeOutBatch != logBatch {
 				continue
 			}
@@ -90,7 +90,7 @@ func (logSink *LogSink) writeLoop() {
 
 //批量写入日志的函数。
 func (logSink *LogSink) saveLogs(logs *common.LogBatch) {
-	fmt.Println("saveLogs：将提交日志数据到mongodb里去了。 ")
+	fmt.Println("5. saveLogs：将提交日志数据到mongodb里去了。 ")
 	logSink.logCollection.InsertMany(context.TODO(), logs.Logs)
 }
 
