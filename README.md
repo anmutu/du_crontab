@@ -1,4 +1,4 @@
-# du_corntab
+# du_crontab
 http://zmfei4.com:8070/  (还有点问题)
 
 
