@@ -6,13 +6,13 @@ http://zmfei4.com:8070/  (尚未完全完成）
 这个项目可以认为是一个升级版本的crontab。
 
 传统的方案会有如下问题：
-1.配置任务时，需要ssh登录到服务器上去然后进行操作。
-2.服务器宕机，任务将终止任务调度，需要人工迁移。
-3.排查任务低效，不方便查看任务的状态与错误的输出。
+* 1.配置任务时，需要ssh登录到服务器上去然后进行操作。
+* 2.服务器宕机，任务将终止任务调度，需要人工迁移。
+* 3.排查任务低效，不方便查看任务的状态与错误的输出。
 
 那么现在的分布式任务调度需要做到了几点：
-1.可视化的web后台，方便任务进行管理。
-2.追踪任务执行状态，采集任务输出，可视化log查看。
+* 1.可视化的web后台，方便任务进行管理。
+* 2.追踪任务执行状态，采集任务输出，可视化log查看。
 
 ### 目录介绍
 * common 这里放一些公共的结构体或者公用函数等。
@@ -29,9 +29,9 @@ Etcd v.3.3.8
 ### 如何run起来
 ```
 windows用户如果在本机跑的话需要先下载cygwin，将之安装，然后到worker下的Executor.go里修改执行代码，指向安装cygin位置:
-			cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
+cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
 linux用户则是
-      cmd=exec.CommandContext(info.CancelCtx,"/bin/bash","-c",info.Job.Command)
+cmd=exec.CommandContext(info.CancelCtx,"/bin/bash","-c",info.Job.Command)
 master.json和worker.json里的列表集群可以换成你自己的，也可以配置多个，避免单点故障。
 run master和run worker.
 http://localhost:8070/就可以去管理job了。
