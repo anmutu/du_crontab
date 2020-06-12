@@ -33,6 +33,7 @@ func InitLogSink() (err error) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("enter InitLogSink")
 	G_LogSink = &LogSink{
 		client:         client,
 		logCollection:  client.Database("cron").Collection("log"),
@@ -46,6 +47,7 @@ func InitLogSink() (err error) {
 	return
 }
 
+//把日志写入到mongodb的函数。
 func (logSink *LogSink) writeLoop() {
 	var (
 		log          *common.JobLog
@@ -83,7 +85,8 @@ func (logSink *LogSink) writeLoop() {
 			}
 			//把超时的批次写入到mongodb中，且保存后要将batch清空
 			logSink.saveLogs(timeOutBatch)
-			timeOutBatch = nil
+			//timeOutBatch = nil
+			logBatch = nil
 		}
 	}
 }

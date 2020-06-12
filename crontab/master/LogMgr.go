@@ -42,38 +42,24 @@ func InitLogMgr() (err error) {
 
 // 查看任务日志
 func (logMgr *LogMgr) GetLoglist(name string, skip int, limit int) (logArr []*common.JobLog, err error) {
-	var (
-	//filter *common.JobLogFilter
-	//logSort *common.SortLogByStartTime
-	//cursor *mongo.Cursor
-	//jobLog *common.JobLog
-	)
-
-	// len(logArr)
 	logArr = make([]*common.JobLog, 0)
-
-	// 过滤条件
-	//filter = &common.JobLogFilter{JobName: name}
-	//filter = &common.JobLogFilter{}
-
-	// 按照任务开始时间倒排
-	//logSort = &common.SortLogByStartTime{SortOrder: -1}
-
-	// 查询
-	//ops := options.Find().SetSort(logSort).SetLimit(int64(limit)).SetSkip(int64(skip))
-	//ops = ops
 
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
-	opts := options.Find().SetSort(bson.D{{"scheduleTime", -1}}).SetLimit(100)
+	opts := options.Find().SetSort(bson.D{{"scheduleTime", -1}}).SetLimit(int64(limit)).SetSkip(int64(skip))
 	cur, err := logMgr.logCollection.Find(context.TODO(), bson.D{{"jobName", name}}, opts)
+
+	fmt.Println(name)
+	fmt.Println(limit)
+	fmt.Println(skip)
+	fmt.Println(opts.Sort)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer cur.Close(ctx)
+
 	for cur.Next(ctx) {
-		//var result bson.M
 		jobLog := &common.JobLog{}
 		err := cur.Decode(jobLog)
 		if err != nil {

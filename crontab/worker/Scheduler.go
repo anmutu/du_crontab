@@ -180,7 +180,7 @@ func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
 	if result.Err != nil {
 		fmt.Println("4.1 scheduler.handleJobResult收到执行job后的结果，出现错误:", result.Err)
 	} else {
-		fmt.Println("4.1 scheduler.handleJobResult收到执行job后的结果，执行job的名称为和输出结果为:", result.ExecuteInfo.Job.Name, string(result.Output)) //, result.Err)
+		fmt.Println("4.1 scheduler.handleJobResult收到执行job后的结果，执行job的名称为和输出结果为:", result.ExecuteInfo.Job.Name, string(result.Output))
 	}
 	if result.Err != common.ERR_LOCK_ALREADY_OCCUPIED {
 		jobLog = &common.JobLog{
@@ -197,8 +197,8 @@ func (scheduler *Scheduler) handleJobResult(result *common.JobExecuteResult) {
 		} else {
 			jobLog.Err = ""
 		}
-		fmt.Println("4. scheduler.handleJobResult：将名称为", jobLog.JobName, "的job发送到日志模块。")
 		G_LogSink.Append2LogChan(jobLog)
+		fmt.Println("4.2 scheduler.handleJobResult：将名称为", jobLog.JobName, "的job发送到日志模块。")
 		return
 	}
 }
