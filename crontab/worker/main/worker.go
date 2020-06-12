@@ -77,8 +77,6 @@ func initEnv() {
 
 //解析命令行参数，最后将之放到配置文件路径中
 func initArgs() {
-	//flag.StringVar(&confFile, "conf", "worker.json", "worker.json")
-	//flag.Parse()
 	flag.StringVar(&confFile, "config", "./worker.json", "worker.json")
 	flag.Parse()
 }
