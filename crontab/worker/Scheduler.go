@@ -90,8 +90,8 @@ func (scheduler Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 		fmt.Println("3.handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有增加任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
 	case common.JOB_EVENT_DELETE: //删除
 		if jobSchedulerPlan, jobExist = scheduler.jobPlanTable[jobEvent.Job.Name]; jobExist {
-			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
 			fmt.Println("3.handleJobEvent。向Scheduler里的jobPlanTable表里做维护操作=>scheduler里检测到有刪除任务:", scheduler.jobPlanTable[jobEvent.Job.Name].Job.Name)
+			delete(scheduler.jobPlanTable, jobEvent.Job.Name)
 		}
 	case common.JOB_EVENT_KILL: //强杀
 		if jobExecuteInfo, jobExecuting = scheduler.jobExecutingTable[jobEvent.Job.Name]; jobExecuting {
