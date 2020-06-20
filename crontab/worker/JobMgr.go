@@ -9,7 +9,6 @@ import (
 	"du_corntab/crontab/common"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
-	//"go.etcd.io/etcd/mvcc/mvccpb"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"time"
 )
@@ -74,7 +73,7 @@ func InitJobMgr() (err error) {
 	//启动killer的监听
 	G_JobMgr.watchKiller()
 
-	//fmt.Println("初始化任务管理器成功。监听了任务启动和killer的监听。")
+	fmt.Println("初始化任务管理器成功。监听了任务启动和killer的监听。")
 	return
 }
 

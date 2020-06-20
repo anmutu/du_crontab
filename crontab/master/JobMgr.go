@@ -162,7 +162,7 @@ func (JobMgr *JobMgr) KillJob(name string) (err error) {
 	}
 	leaseId = leaseGrantResp.ID
 
-	//第二步，把这个带有1秒续约的leaase put到killer目录里，则这个1秒后就会过期了。
+	//第二步，把这个带有1秒续约的lease put到killer目录里，则这个1秒后就会过期了。
 	if _, err = JobMgr.kv.Put(context.TODO(), killerKey, "", clientv3.WithLease(leaseId)); err != nil {
 		return
 	}

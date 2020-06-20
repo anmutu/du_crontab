@@ -117,6 +117,26 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<!--  确定删除日志模态框 -->
+<div id="del-confirm-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">删除</h4>
+            </div>
+            <div class="modal-body">
+                <p>确定删除当前job吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="del-confirm-btn">确定删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!--  健康节点模态框 -->
 <div id="worker-modal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -181,9 +201,11 @@
             // 弹出模态框
             $('#edit-modal').modal('show')
         })
+
         // 删除任务
         $("#job-list").on("click", ".delete-job", function(event) { // javascript bind
-            var jobName = $(this).parents("tr").children(".job-name").text()
+           // $('#del-confirm-modal').modal('show')
+             var jobName = $(this).parents("tr").children(".job-name").text()
             $.ajax({
                 url: '/job/delete',
                 type: 'post',
@@ -194,6 +216,8 @@
                 }
             })
         })
+
+
         // 杀死任务
         $("#job-list").on("click", ".kill-job", function(event) {
             var jobName = $(this).parents("tr").children(".job-name").text()
