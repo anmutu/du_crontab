@@ -57,10 +57,10 @@ func (executor *Executor) ExecutorJob(info *common.JobExecuteInfo) {
 			result.StartTime = time.Now()
 
 			//发布到linux里使用这个。
-			//cmd=exec.CommandContext(info.CancelCtx,"/bin/bash","-c",info.Job.Command)
+			cmd = exec.CommandContext(info.CancelCtx, "/bin/bash", "-c", info.Job.Command)
 
 			//因为这里有强杀的需求，这里的context需要是info.CancelCtx
-			cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
+			//cmd = exec.CommandContext(info.CancelCtx, "C:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
 			output, err = cmd.CombinedOutput()
 			result.Output = output
 			result.Err = err
