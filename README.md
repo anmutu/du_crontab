@@ -1,6 +1,5 @@
 # du_crontab
-http://zmfei4.com:8070/  (还有点问题)
-
+http://zmfei4.com:8070/  
 
 ### 项目介绍
 这个项目可以认为是一个升级版本的crontab。
