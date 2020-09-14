@@ -45,7 +45,7 @@ func main() {
 	if err = worker.InitExecutor(); err != nil {
 		goto ERR
 	}
-	fmt.Println("0.3 启动执行器exector成功。")
+	fmt.Println("0.3 启动执行器executor成功。")
 
 	//初始化调度器
 	if err = worker.InitScheduler(); err != nil {
