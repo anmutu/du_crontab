@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+//这里是把日志存到mongodb里的模块。
+
 type LogSink struct {
 	client         *mongo.Client
 	logCollection  *mongo.Collection

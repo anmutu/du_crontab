@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+/*
+  这里是对外接口的api。
+  主要调用了JobMgr.go和LogMgr.go里的函数。
+  也就是这里提供了对job的CRUD的接口和查询日志的接口。
+*/
+
 //任务的http接口
 type ApiServer struct {
 	httpServer *http.Server
@@ -67,6 +73,7 @@ func InitApiServer() (err error) {
 	return
 }
 
+//1.这里是job相关的接口。
 //获取所有crontab列表任务
 func handleJobList(resp http.ResponseWriter, req *http.Request) {
 	var (
@@ -188,6 +195,7 @@ ERR:
 
 }
 
+//2.任务日志相关。
 //获取任务日志的接口。
 func handleJobLogList(resp http.ResponseWriter, req *http.Request) {
 	var (
