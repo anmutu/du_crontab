@@ -18,3 +18,7 @@ Restart=always
 ExecStart=/home/work/crontab/worker/main -config /home/work/crontab/worker/worker.json
 #进程工作目录
 WorkingDirectory=/home/work/crontab/worker
+
+[Install]
+# 在系统启动后加载UNIT
+WantedBy=multi-user.target

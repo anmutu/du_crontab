@@ -18,3 +18,7 @@ Restart=always
 ExecStart=/home/work/crontab/master/main -config /home/work/crontab/master/master.json
 #进程工作目录
 WorkingDirectory=/home/work/crontab/master
+
+[Install]
+# 在系统启动后加载UNIT
+WantedBy=multi-user.target
