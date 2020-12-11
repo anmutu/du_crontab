@@ -1,9 +1,9 @@
 # du_crontab
-项目演示地址：http://zmfei4.com:8070/  
-0.项目效果演示和上云大概步骤视频讲解说明：https://www.bilibili.com/video/BV1w5411j7ut/
-1.上线第一步视频讲解：https://www.bilibili.com/video/BV1pA41147eB
-2.上线第二步视频讲解：https://www.bilibili.com/video/BV16V41187Sa/
-3.上线第三步视频讲解：https://www.bilibili.com/video/BV1fV411878a/
+* 项目演示地址：http://zmfei4.com:8070/  
+* 项目效果演示和上云大概步骤视频讲解说明：https://www.bilibili.com/video/BV1w5411j7ut/
+* 上线第一步视频讲解：https://www.bilibili.com/video/BV1pA41147eB
+* 上线第二步视频讲解：https://www.bilibili.com/video/BV16V41187Sa/
+* 上线第三步视频讲解：https://www.bilibili.com/video/BV1fV411878a/
 
 
 ### 项目介绍
