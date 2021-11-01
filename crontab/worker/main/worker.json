@@ -1,12 +1,12 @@
 {
   "etcd列表集群": "配置多个可避免单点故障",
-  "etcdEndpoints": ["129.211.78.6:2379"],
+  "etcdEndpoints": ["119.91.140.68:2379"],
 
   "etcd连接超时":"单位还是毫秒",
   "etcdDialTimeOut": 5000,
 
   "mongodb地址": "采用mongodb uri",
-  "mongodbUri": "mongodb://129.211.78.6:27017",
+  "mongodbUri": "mongodb://119.91.140.68:27017",
 
   "日志批次大小": "为了减少网络传输",
   "jobLogBatchSize": 100,
